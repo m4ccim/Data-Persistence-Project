@@ -11,6 +11,7 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text BestScoreText;
     public GameObject GameOverText;
     
     private bool m_Started = false;
@@ -30,12 +31,18 @@ public class MainManager : MonoBehaviour
         {
             for (int x = 0; x < perLine; ++x)
             {
-                Vector3 position = new Vector3(-1.5f + step * x, 2.5f + i * 0.3f, 0);
+                Vector3 position = new(-1.5f + step * x, 2.5f + i * 0.3f, 0);
                 var brick = Instantiate(BrickPrefab, position, Quaternion.identity);
                 brick.PointValue = pointCountArray[i];
                 brick.onDestroyed.AddListener(AddPoint);
             }
         }
+        UpdateBestScore();
+    }
+
+    void UpdateBestScore()
+    {
+        BestScoreText.text = $"Best Score: {NameManager.Instance.bestScore.Name} : {NameManager.Instance.bestScore.Score}";
     }
 
     private void Update()
@@ -46,7 +53,7 @@ public class MainManager : MonoBehaviour
             {
                 m_Started = true;
                 float randomDirection = Random.Range(-1.0f, 1.0f);
-                Vector3 forceDir = new Vector3(randomDirection, 1, 0);
+                Vector3 forceDir = new(randomDirection, 1, 0);
                 forceDir.Normalize();
 
                 Ball.transform.SetParent(null);
@@ -72,5 +79,11 @@ public class MainManager : MonoBehaviour
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+        if (m_Points > NameManager.Instance.bestScore.Score)
+        {
+            NameManager.Instance.bestScore = new NameManager.BestScore(NameManager.Instance.Name, m_Points);
+            NameManager.Instance.SaveScore();
+            UpdateBestScore();
+        }
     }
 }
